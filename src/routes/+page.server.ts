@@ -1,6 +1,16 @@
 import type {Actions, PageServerLoad} from './$types';
 import type {Todo} from '$lib/types';
 
+export interface Todo {
+    id: number;
+    title: string;
+    description: string;
+    completed: boolean;
+    priority: 'low' | 'medium' | 'high';
+    dueDate?: Date;
+}
+
+
 const generateTodos = (): Todo[] => {
     return Array.from({length: 20}, (_, i) => ({
         id: i + 1,
@@ -14,9 +24,27 @@ const generateTodos = (): Todo[] => {
 
 const todos = generateTodos();
 
-export const load = (async () => {
+function filter(searchTerm: string | undefined): Todo[] {
+    return searchTerm
+        ? todos.filter(todo =>
+            todo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            todo.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            todo.priority.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            todo.dueDate?.toDateString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : todos;
+}
+
+export const load = (async ({url}) => {
+    // Get search term from URL query parameter
+    const searchTerm = url.searchParams.get('search') || '';
+
+    // Filter todos if there's a search term
+    const filteredTodos = filter(searchTerm);
+
     return {
-        todos
+        searchTerm,
+        filteredTodos
     };
 }) satisfies PageServerLoad;
 
@@ -26,13 +54,10 @@ export const actions = {
         const search = data.get('search')?.toString() || '';
 
         // Filter todos based on search criteria
-        let filteredTodos = todos.filter(todo =>
-            todo.title.toLowerCase().includes(search.toLowerCase()) ||
-            todo.description.toLowerCase().includes(search.toLowerCase())
-        );
-
+        let filteredTodos = filter(search);
         return {
-            filteredTodos
+            filteredTodos,
+            searchTerm: search
         };
     }
 } satisfies Actions;

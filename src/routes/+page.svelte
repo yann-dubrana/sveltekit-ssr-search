@@ -13,7 +13,8 @@
 
     let {data} = $props();
 
-    let filteredTodos = $state(data.todos);
+    let searchTerm = $state(data.searchTerm);
+    let filteredTodos = $state(data.filteredTodos);
 
     // Priority badge colors
     const priorityColors = $state({
@@ -34,11 +35,21 @@
         event.target.form.requestSubmit();
     }
 
+    function updateUrlWithSearchQuery(searchQuery: string) {
+        const url = new URL(window.location.href);
+        if (searchQuery.trim() === "") {
+            url.searchParams.delete('search');
+        } else {
+            url.searchParams.set('search', searchQuery);
+        }
+        window.history.pushState({}, '', url);
+    }
+
     function validateResult() {
         return ({result}) => {
             if (result.type === "success") {
-                console.log(result);
                 filteredTodos = result.data.filteredTodos;
+                updateUrlWithSearchQuery(searchTerm);
                 return
             }
         }
@@ -49,7 +60,7 @@
     <Heading tag="h1" class="text-2xl font-bold mb-4 text-center p-4">Recherche SSR Todos</Heading>
 
     <form action="?/searchTodos" method="POST" class="p-6" use:enhance={validateResult}>
-        <Input type="text" name="search" placeholder="Rechercher un todo" oninput={submitForm}
+        <Input type="text" name="search" placeholder="Rechercher un todo" oninput={submitForm} bind:value={searchTerm}
                class="w-full p-2 border border-gray-300 rounded-lg"/>
     </form>
 
