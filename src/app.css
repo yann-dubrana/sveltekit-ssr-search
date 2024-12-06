@@ -1,6 +1,40 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+
+/* Base background */
+body {
+    background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Geometric pattern */
+.background-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Dynamic particle effect */
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+.particles {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 193, 7, 0.5);
+    border-radius: 50%;
+    animation: float 5s ease-in-out infinite;
+}

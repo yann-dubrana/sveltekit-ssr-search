@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../todos.sqlite3"
+}
+
+model Todo {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  completed   Boolean   @default(false)
+  priority    String    @default("medium")
+  dueDate     DateTime?
+}

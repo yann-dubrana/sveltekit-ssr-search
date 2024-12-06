@@ -7,14 +7,17 @@
         TableHeadCell,
         TableBody,
         TableBodyRow,
-        TableBodyCell
+        TableBodyCell, Button, Alert
     } from 'flowbite-svelte'
+    import {InfoCircleSolid} from 'flowbite-svelte-icons'
     import {enhance} from '$app/forms'
+    import {invalidate} from "$app/navigation";
 
     let {data} = $props();
 
     let searchTerm = $state(data.searchTerm);
     let filteredTodos = $state(data.filteredTodos);
+    let message = $state("");
 
     // Priority badge colors
     const priorityColors = $state({
@@ -54,21 +57,43 @@
             }
         }
     }
+
+    function showSuccessMessage(message: string) {
+        return ({result}) => {
+            if (result.type === "success" && result.data.message) {
+                message = result.data.message;
+                invalidate("/")
+            }
+        }
+    }
 </script>
 
 <main class="max-w-screen-lg mx-auto">
     <Heading tag="h1" class="text-2xl font-bold mb-4 text-center p-4">Recherche SSR Todos</Heading>
 
-    <form action="?/searchTodos" method="POST" class="p-6" use:enhance={validateResult}>
-        <Input type="text" name="search" placeholder="Rechercher un todo" oninput={submitForm} bind:value={searchTerm}
-               class="w-full p-2 border border-gray-300 rounded-lg"/>
-    </form>
+    {#if message}
+        <Alert dismissable on:close={()=>{message = ""}}>
+            <InfoCircleSolid slot="icon" class="w-5 h-5"/>
+            {message}
+        </Alert>
+    {/if}
+
+    <div class="flex justify-between">
+        <form action="?/searchTodos" method="POST" class="py-6 w-96" use:enhance={validateResult}>
+            <Input type="text" name="search" placeholder="Rechercher un todo" oninput={submitForm}
+                   bind:value={searchTerm}
+                   class="w-full p-2 border border-gray-300 rounded-lg"/>
+        </form>
+
+        <form action="?/createFromFakeholder" method="POST" class="p-6" use:enhance>
+            <Button type="submit" color="green" disabled>Créer 200 todos</Button>
+        </form>
+    </div>
+
 
     <Table title="todos">
         <TableHead>
-
             <TableHeadCell>Title</TableHeadCell>
-            <TableHeadCell>Description</TableHeadCell>
             <TableHeadCell>Priority</TableHeadCell>
             <TableHeadCell>Due Date</TableHeadCell>
             <TableHeadCell>Status</TableHeadCell>
@@ -77,7 +102,6 @@
             {#each filteredTodos as todo}
                 <TableBodyRow>
                     <TableBodyCell>{todo.title}</TableBodyCell>
-                    <TableBodyCell>{todo.description}</TableBodyCell>
                     <TableBodyCell>
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {priorityColors[todo.priority]}">
                         {todo.priority}
