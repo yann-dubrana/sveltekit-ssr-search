@@ -52,7 +52,9 @@
             query.set(name, value);
         }
 
-
+        if(query.has('page')) {
+            query.set('page', '1');
+        }
         goto(`?${query.toString()}`, {keepFocus: true});
     }
 
@@ -137,14 +139,12 @@
             </TableBody>
         </Table>
 
-        {#key filteredTodos}
-            <Pagination
-                    page={filteredTodos.page}
-                    total={filteredTodos.total}
-                    size={filteredTodos.size}
-                    pages={filteredTodos.pages}
-            />
-        {/key}
+        <Pagination
+                page={filteredTodos.page}
+                total={filteredTodos.total}
+                size={filteredTodos.size}
+                pages={filteredTodos.pages}
+        />
     {/if}
 {/await}
 
