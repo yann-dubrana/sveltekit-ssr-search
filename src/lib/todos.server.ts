@@ -1,5 +1,6 @@
 import {PrismaClient} from '@prisma/client';
 import {type Todo} from '@prisma/client'
+
 export const db = new PrismaClient();
 
 class TodoService {
@@ -67,27 +68,46 @@ class TodoService {
         });
     }
 
-    async getFiltered(searchTerm?: string): Promise<Todo[]> {
-        if (!searchTerm) {
-            return await this.get();
-        }
+    async getFiltered(searchTerm?: string, page?: number, pageSize?: number): Promise<{
+        items: Todo[];
+        total: number;
+        page: number;
+        size: number
+        pages: number;
+    }> {
+        const take = pageSize || 10;
+        const skip = (page ? page - 1 : 0) * take;
 
-        return db.todo.findMany({
-            where: {
+        let where = {};
+        if (searchTerm) {
+            where = {
                 OR: [
                     {
                         title: {
                             contains: searchTerm,
-                        }
+                        },
                     },
                     {
                         priority: {
                             contains: searchTerm,
-                        }
+                        },
                     },
-                ]
-            }
-        });
+                ],
+            };
+        }
+
+        const [items, total] = await Promise.all([
+            db.todo.findMany({
+                where,
+                take,
+                skip,
+            }),
+            db.todo.count({
+                where,
+            }),
+        ]);
+
+        return {items, total, page: page || 1, size: take, pages: Math.ceil(total / take)};
     }
 
     async createFromFakeHolder(): Promise<void> {
